@@ -6,7 +6,7 @@ plugins {
 }
 
 val ktorVersion = "2.3.5"
-val kotestVersion = "5.7.2"
+val kotestVersion = "5.8.0"
 val mockkVersion = "1.13.8"
 
 allprojects {
