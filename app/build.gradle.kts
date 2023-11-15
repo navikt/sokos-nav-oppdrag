@@ -1,5 +1,5 @@
-val ktorVersion = "2.3.5"
-val prometheusVersion = "1.11.5"
+val ktorVersion = "2.3.6"
+val prometheusVersion = "1.12.0"
 val natpryceVersion = "1.6.10.0"
 val kotlinLoggingVersion = "3.0.5"
 val janionVersion = "3.1.10"
