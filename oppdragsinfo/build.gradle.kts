@@ -16,7 +16,7 @@ val papertrailappVersion="1.0.0"
 val natpryceVersion="1.6.10.0"
 val hikariVersion="5.0.1"
 val db2_jcc_version="11.5.8.0"
-val jacksonVersion="2.15.3"
+val jacksonVersion="2.16.0"
 val jooqVersion="3.18.7"
 
 plugins {
