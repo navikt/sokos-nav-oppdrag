@@ -6,7 +6,7 @@ val prometheusVersion = "1.12.0"
 val h2Version = "2.1.214"
 val swaggerRequestValidatorVersion = "2.39.0"
 val restAssuredVersion = "5.3.2"
-val mockOAuth2ServerVersion = "2.0.0"
+val mockOAuth2ServerVersion = "2.0.1"
 val kotlinLoggingVersion = "3.0.5"
 val janionVersion = "3.1.10"
 val logbackVersion = "1.4.11"
@@ -20,7 +20,7 @@ val jooqVersion = "3.18.7"
 
 plugins {
     id("nu.studer.jooq") version "8.2.1"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.20"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.21"
 }
 
 dependencies {
