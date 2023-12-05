@@ -28,7 +28,7 @@ object RepositoryExtensions {
         }
     }
 
-    inline fun <reified T : Any?> ResultSet.getColumn(
+    private inline fun <reified T : Any?> ResultSet.getColumn(
         columnLabel: String,
         transform: (T) -> T = { it },
     ): T {

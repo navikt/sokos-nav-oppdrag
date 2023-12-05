@@ -21,6 +21,9 @@ object OppdragsInfoRepository {
             param(oppdragId)
         ).executeQuery().toOppdrag()
 
+
+
+
     /*    fun Connection.hentOppdragsinfoMedOffnr(
             offnr: String,
             faggruppeKode: Int?,
