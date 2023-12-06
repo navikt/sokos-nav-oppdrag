@@ -8,6 +8,7 @@ import no.nav.sokos.oppdragsinfo.config.logger
 import no.nav.sokos.oppdragsinfo.config.secureLogger
 import no.nav.sokos.oppdragsinfo.database.Db2DataSource
 import no.nav.sokos.oppdragsinfo.database.OppdragsInfoRepository.hentOppdrag
+import no.nav.sokos.oppdragsinfo.database.RepositoryExtensions.setAcceleration
 import no.nav.sokos.oppdragsinfo.database.RepositoryExtensions.useAndHandleErrors
 import no.nav.sokos.oppdragsinfo.domain.Oppdrag
 import no.nav.sokos.oppdragsinfo.security.getSaksbehandler
@@ -31,6 +32,7 @@ class OppdragsInfoService(
             )
         )
         return db2DataSource.connection.useAndHandleErrors { connection ->
+            connection.setAcceleration()
             connection.hentOppdrag(oppdragsId)
         }
 

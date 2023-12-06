@@ -7,12 +7,10 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.time.LocalDate
 import java.time.LocalDateTime
-import mu.KotlinLogging
+import no.nav.sokos.oppdragsinfo.config.logger
 import no.nav.sokos.oppdragsinfo.database.RepositoryExtensions.Parameter
 import no.nav.sokos.oppdragsinfo.domain.Oppdrag
 import no.nav.sokos.oppdragsinfo.metrics.databaseFailureCounterOppdragsInfo
-
-val logger = KotlinLogging.logger { }
 
 object RepositoryExtensions {
 
@@ -25,6 +23,11 @@ object RepositoryExtensions {
             databaseFailureCounterOppdragsInfo.labels("${ex.errorCode}", ex.sqlState).inc()
             throw ex
         }
+    }
+
+    // Må kjøres før hver query som gjør query raskere
+    fun Connection.setAcceleration() {
+        prepareStatement("SET CURRENT QUERY ACCELERATION ALL;").execute()
     }
 
     private inline fun <reified T : Any?> ResultSet.getColumn(
