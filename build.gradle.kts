@@ -7,7 +7,7 @@ plugins {
 }
 
 // Ktor
-val ktorVersion = "2.3.6"
+val ktorVersion = "2.3.7"
 
 // Monitorering
 val prometheusVersion = "1.12.0"
