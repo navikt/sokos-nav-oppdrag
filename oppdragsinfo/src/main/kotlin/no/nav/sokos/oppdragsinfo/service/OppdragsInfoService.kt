@@ -11,6 +11,10 @@ import no.nav.sokos.oppdragsinfo.database.OppdragsInfoRepository.getOppdrag
 import no.nav.sokos.oppdragsinfo.database.OppdragsInfoRepository.getOppdragsInfo
 import no.nav.sokos.oppdragsinfo.database.RepositoryExtensions.setAcceleration
 import no.nav.sokos.oppdragsinfo.database.RepositoryExtensions.useAndHandleErrors
+import no.nav.sokos.oppdragsinfo.database.hentOppdrag
+import no.nav.sokos.oppdragsinfo.database.hentOppdragsLinjer
+import no.nav.sokos.oppdragsinfo.database.hentOppdragsenheter
+import no.nav.sokos.oppdragsinfo.domain.OppdragsDetaljer
 import no.nav.sokos.oppdragsinfo.domain.OppdragsInfo
 import no.nav.sokos.oppdragsinfo.security.getSaksbehandler
 
@@ -36,8 +40,11 @@ class OppdragsInfoService(
         )
 
         // TODO: Gjøre en sjekk på om gjelderId finnes eller ikke??
-        val oppdragsInfo = db2DataSource.connection.useAndHandleErrors { it.setAcceleration(); it.getOppdragsInfo(gjelderId).firstOrNull()!! }
-        val oppdrag = db2DataSource.connection.useAndHandleErrors { it.setAcceleration(); it.getOppdrag(oppdragsInfo.gjelderId) }
+        val oppdragsInfo = db2DataSource.connection.useAndHandleErrors {
+            it.setAcceleration(); it.getOppdragsInfo(gjelderId).firstOrNull()!!
+        }
+        val oppdrag =
+            db2DataSource.connection.useAndHandleErrors { it.setAcceleration(); it.getOppdrag(oppdragsInfo.gjelderId) }
 
         return listOf(
             OppdragsInfo(
@@ -94,7 +101,7 @@ class OppdragsInfoService(
                     )
                 }
             }
-        }*/
+        } */
 
     /*    suspend fun finnOppdragslinjeInfo(connection: Connection, oppdragsId: Int, linjeId: Int): OppdragsLinjeInfo {
             val oppdLinje: OppdragsLinjeInfo
@@ -114,148 +121,34 @@ class OppdragsInfoService(
             return oppdLinje
         }*/
 
-    /*    suspend fun hentOppdragKompakt(
-            oppdragsId: String,
-            applicationCall: ApplicationCall
-        ): OppdragsInfoKompaktVO {
-            val saksbehandler = hentSaksbehandler(applicationCall)
-            secureLogger.info("Henter oppdrag med id: $oppdragsId")
-            auditLogger.auditLog(
-                AuditLogg(
-                    saksbehandler = saksbehandler.ident,
-                    oppdragsId = oppdragsId
-                )
+    suspend fun hentOppdrag(
+        oppdragsId: String,
+        applicationCall: ApplicationCall
+    ): OppdragsDetaljer {
+        val saksbehandler = hentSaksbehandler(applicationCall)
+        secureLogger.info("Henter oppdrag med id: $oppdragsId")
+        auditLogger.auditLog(
+            AuditLogg(
+                saksbehandler = saksbehandler.ident,
+                oppdragsId = oppdragsId
             )
-            return db2DataSource.connection.useAndHandleErrors { connection ->
-                connection.setAcceleration()
-                val oppdrag = connection.hentOppdrag(oppdragsId.trim().toInt())
-                logger.info("###oppdrag={}", oppdrag)
-                val fagomraade = connection.hentFagomraade(oppdrag[0].kodeFagOmrade)
-                val oppdragslinjer = connection.hentOppdragslinjer(oppdragsId.trim().toInt())
-                logger.info("###antall oppdragslinjer={}", oppdragslinjer.size)
-
-                val oppdragsInfoKompaktLinjeInfo = coroutineScope {
-                    oppdragslinjer.map {
-                        async {
-                            finnLinjeInfoForOppdragsInfoKompakt(
-                                connection,
-                                oppdragsId.trim().toInt(),
-                                it.linjeId
-                            )
-                        }
-                    }.awaitAll().toList()
-                }
-                logger.info("###hentet all info for {} oppdragslinjer", oppdragsInfoKompaktLinjeInfo.size)
-                var index = 0
-                val oppdragslinjerInfo = oppdragslinjer.map {
-                    OppdragsInfoLinjeKompaktVO(
-                        it.linjeId,
-                        it.sats,
-                        it.typeSats,
-                        it.vedtakFom.orEmpty(),
-                        it.vedtakTom.orEmpty(),
-                        if (it.sats < 0) "K" else "D",
-                        connection.hentKlasse(it.kodeKlasse).first(),
-                        oppdragsInfoKompaktLinjeInfo.get(index).korreksjoner,
-                        oppdragsInfoKompaktLinjeInfo.get(index).attestasjoner,
-                        oppdragsInfoKompaktLinjeInfo.get(index++).linjestatuser
-                    )
-                }.toList()
-                logger.info("###bygget respons for oppdragslinjene")
-                OppdragsInfoKompaktVO(
-                    oppdragsId.toInt(),
-                    "TestTestesen",
-                    oppdrag[0].fagsystemId,
-                    fagomraade.first(),
-                    oppdrag[0].kjorIdag,
-                    oppdrag[0].oppdragGjelderId,
-                    connection.eksistererOppdragsenhet(oppdragsId.toInt()),
-                    connection.eksistererOppdragstatus(oppdragsId.toInt()),
-                    oppdragslinjerInfo
-                )
-            }
-        }*/
-
-    /*    suspend fun hentOppdrag(
-            oppdragsId: String,
-            applicationCall: ApplicationCall
-        ): OppdragsInfoVO {
-            val saksbehandler = hentSaksbehandler(applicationCall)
-            secureLogger.info("Henter oppdrag med id: $oppdragsId")
-            auditLogger.auditLog(
-                AuditLogg(
-                    saksbehandler = saksbehandler.ident,
-                    oppdragsId = oppdragsId
-                )
+        )
+        return db2DataSource.connection.useAndHandleErrors { connection ->
+            connection.setAcceleration()
+            val oppdragsinfo = connection.hentOppdrag(oppdragsId.trim().toInt()).first()
+            val oppdragsenheter = connection.hentOppdragsenheter(oppdragsId.trim().toInt())
+            val oppdragslinjer = connection.hentOppdragsLinjer(oppdragsId.trim().toInt())
+            OppdragsDetaljer(
+                oppdragsinfo.fagsystemId,
+                oppdragsinfo.oppdragsId,
+                oppdragsinfo.kjøresIdag,
+                oppdragsinfo.fagOmraadeNavn,
+                oppdragsinfo.status,
+                oppdragsenheter,
+                oppdragslinjer
             )
-            return db2DataSource.connection.useAndHandleErrors { connection ->
-                connection.setAcceleration()
-                val oppdrag = connection.hentOppdrag(oppdragsId.trim().toInt())
-                val fagomraade = connection.hentFagomraade(oppdrag[0].kodeFagOmrade)
-                val oppdragslinjer = connection.hentOppdragslinjer(oppdragsId.trim().toInt())
-                val oppdragsInfoLinjeInfo =
-                    oppdragslinjer.map { finnLinjeInfoForOppdragsInfo(connection, oppdragsId.trim().toInt(), it.linjeId) }
-                        .toList()
-                var index = 0
-                val oppdragslinjerInfo = oppdragslinjer.map {
-                    OppdragsInfoLinjeVO(
-                        it.oppdragsId,
-                        it.linjeId,
-                        it.sats,
-                        it.typeSats,
-                        it.vedtakFom.orEmpty(),
-                        it.vedtakTom.orEmpty(),
-                        if (it.sats < 0) "K" else "D",
-                        connection.hentKlasse(it.kodeKlasse).first(),
-                        oppdragsInfoLinjeInfo.get(index).korreksjoner,
-                        oppdragsInfoLinjeInfo.get(index).attestasjoner,
-                        oppdragsInfoLinjeInfo.get(index++).linjestatuser
-                    )
-                }.toList()
-                OppdragsInfoVO(
-                    oppdragsId.toInt(),
-                    "TestTestesen",
-                    oppdrag[0].fagsystemId,
-                    fagomraade.first(),
-                    oppdrag[0].kjorIdag,
-                    oppdrag[0].oppdragGjelderId,
-                    connection.hentOppdragsenhet(oppdragsId.toInt()),
-                    connection.hentOppdragstatus(oppdragsId.toInt()),
-                    oppdragslinjerInfo
-                )
-            }
-        }*/
-
-    /*    fun finnLinjeInfoForOppdragsInfoKompakt(
-            connection: Connection,
-            oppdragsId: Int,
-            oppdragsLinje: Int
-        ): OppdragsInfoKompaktLinjeInfo {
-            val OppdragsInfoKompaktLinjeInfo = OppdragsInfoKompaktLinjeInfo(
-                connection.eksistererKorreksjoner(oppdragsId, oppdragsLinje),
-                connection.eksistererAttestasjoner(oppdragsId, oppdragsLinje),
-                connection.eksistererLinjestatuser(oppdragsId, oppdragsLinje)
-            )
-            logger.info("###prosessert oppdragslinje {}", oppdragsLinje)
-            return OppdragsInfoKompaktLinjeInfo
-        }*/
-
-
-    /*    suspend fun finnLinjeInfoForOppdragsInfo(
-            connection: Connection,
-            oppdragsId: Int,
-            oppdragsLinje: Int
-        ): OppdragsInfoLinjeInfo {
-            val linjeInfo: OppdragsInfoLinjeInfo
-            coroutineScope {
-                linjeInfo = OppdragsInfoLinjeInfo(
-                    async { connection.hentKorreksjoner(oppdragsId, oppdragsLinje) }.await(),
-                    async { connection.hentAttestasjoner(oppdragsId, oppdragsLinje) }.await(),
-                    async { connection.hentLinjestatuser(oppdragsId, oppdragsLinje) }.await()
-                )
-            }
-            return linjeInfo
-        }*/
+        }
+    }
 
     private fun hentSaksbehandler(call: ApplicationCall): Saksbehandler {
         return getSaksbehandler(call)

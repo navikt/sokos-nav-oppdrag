@@ -10,8 +10,10 @@ import no.nav.sokos.oppdragsinfo.domain.Attest
 import no.nav.sokos.oppdragsinfo.domain.LinjeStatus
 import no.nav.sokos.oppdragsinfo.domain.Oppdrag
 import no.nav.sokos.oppdragsinfo.domain.OppdragStatus
+import no.nav.sokos.oppdragsinfo.domain.OppdragsDetaljer
+import no.nav.sokos.oppdragsinfo.domain.OppdragsEnhet
 import no.nav.sokos.oppdragsinfo.domain.OppdragsInfo
-import no.nav.sokos.oppdragsinfo.domain.Oppdragslinje
+import no.nav.sokos.oppdragsinfo.domain.OppdragsLinje
 
 
 object OppdragsInfoRepository {
@@ -65,10 +67,10 @@ object OppdragsInfoRepository {
         }
 }
 
-fun Connection.hentOppdragslinje(
+/*fun Connection.hentOppdragslinje(
     oppdragId: Int,
     oppdragslinje: Int
-): List<Oppdragslinje> {
+): List<OppdragsLinje> {
     val resultSet = prepareStatement(
         """
                 SELECT *
@@ -81,7 +83,7 @@ fun Connection.hentOppdragslinje(
         param(oppdragslinje)
     ).executeQuery()
     return toOppdragslinje(resultSet)
-}
+}*/
 
 /*fun Connection.hentSkyldnere(
     oppdragId: Int,
@@ -191,43 +193,6 @@ fun Connection.hentOppdragslinje(
     return toOppdragsTekst(resultSet)
 }*/
 
-/*fun Connection.hentKorreksjoner(
-    oppdragId: Int,
-    oppdragslinje: Int
-): List<Korreksjon> {
-    val resultSet = prepareStatement(
-        """
-                SELECT *
-                FROM T_KORREKSJON
-                WHERE OPPDRAGS_ID = ?
-                AND LINJE_ID = ?
-                ORDER BY TIDSPKT_REG
-            """.trimIndent()
-    ).withParameters(
-        param(oppdragId),
-        param(oppdragslinje)
-    ).executeQuery()
-    return toKorreksjon(resultSet)
-}*/
-
-fun Connection.eksistererKorreksjoner(
-    oppdragId: Int,
-    oppdragslinje: Int
-): Boolean {
-    val resultSet = prepareStatement(
-        """
-                SELECT COUNT(*) 
-                FROM T_KORREKSJON
-                WHERE OPPDRAGS_ID = ?
-                AND LINJE_ID = ?
-            """.trimIndent()
-    ).withParameters(
-        param(oppdragId),
-        param(oppdragslinje)
-    ).executeQuery()
-    resultSet.next()
-    return resultSet.getInt(1) > 0
-}
 
 /*fun Connection.henKravhavere(
     oppdragId: Int,
@@ -280,253 +245,130 @@ fun Connection.eksistererKorreksjoner(
     return toKlasse(resultSet)
 }*/
 
-fun Connection.hentLinjestatuser(
-    oppdragId: Int,
-    oppdragslinje: Int
-): List<LinjeStatus> {
-    val resultSet = prepareStatement(
-        """
-                SELECT    LIST.OPPDRAGS_ID,
-                          LIST.KODE_STATUS,
-                          LIST.LINJE_ID,
-                          LIST.DATO_FOM,
-                          LIST.LOPENR,
-                          LIST.BRUKERID,
-                          LIST.TIDSPKT_REG
-                FROM T_LINJE_STATUS LIST
-                WHERE LIST.OPPDRAGS_ID = ?
-                  AND LIST.LINJE_ID = ?
-                  AND LIST.TIDSPKT_REG = (
-                      SELECT MAX(LIS2.TIDSPKT_REG)
-                      FROM   T_LINJE_STATUS LIS2
-                      WHERE LIS2.OPPDRAGS_ID = LIST.OPPDRAGS_ID
-                          AND LIS2.LINJE_ID = LIST.LINJE_ID
-                          AND LIS2.DATO_FOM <= (
-                              SELECT MIN(KJPL.DATO_BEREGN_FOM)
-                              FROM    T_KJOREPLAN KJPL, 
-                                      T_OPPDRAG OPPD,
-                                      T_FAGOMRAADE FAGO
-                              WHERE KJPL.KODE_FAGGRUPPE 	= FAGO.KODE_FAGGRUPPE
-                                  AND FAGO.KODE_FAGOMRAADE	= OPPD.KODE_FAGOMRAADE
-                                  AND KJPL.STATUS			= 'PLAN'
-                                  AND KJPL.FREKVENS			= OPPD.FREKVENS
-                                  AND OPPD.OPPDRAGS_ID		= LIST.OPPDRAGS_ID           
-						)                                                     	
-		)
-            """.trimIndent()
-    ).withParameters(
-        param(oppdragId),
-        param(oppdragslinje)
-    ).executeQuery()
-    return toLinjestatus(resultSet)
-}
-
-fun Connection.eksistererLinjestatuser(
-    oppdragId: Int,
-    oppdragslinje: Int
-): Boolean {
-    val resultSet = prepareStatement(
-        """
-                SELECT COUNT(*) 
-                FROM T_LINJE_STATUS LIST
-                WHERE LIST.OPPDRAGS_ID = ?
-                  AND LIST.LINJE_ID = ?
-                  AND LIST.TIDSPKT_REG = (
-                      SELECT MAX(LIS2.TIDSPKT_REG)
-                      FROM   T_LINJE_STATUS LIS2
-                      WHERE LIS2.OPPDRAGS_ID = LIST.OPPDRAGS_ID
-                          AND LIS2.LINJE_ID = LIST.LINJE_ID
-                          AND LIS2.DATO_FOM <= (
-                              SELECT MIN(KJPL.DATO_BEREGN_FOM)
-                              FROM    T_KJOREPLAN KJPL, 
-                                      T_OPPDRAG OPPD,
-                                      T_FAGOMRAADE FAGO
-                              WHERE KJPL.KODE_FAGGRUPPE 	= FAGO.KODE_FAGGRUPPE
-                                  AND FAGO.KODE_FAGOMRAADE	= OPPD.KODE_FAGOMRAADE
-                                  AND KJPL.STATUS			= 'PLAN'
-                                  AND KJPL.FREKVENS			= OPPD.FREKVENS
-                                  AND OPPD.OPPDRAGS_ID		= LIST.OPPDRAGS_ID           
-						)                                                     	
-		)
-            """.trimIndent()
-    ).withParameters(
-        param(oppdragId),
-        param(oppdragslinje)
-    ).executeQuery()
-    resultSet.next()
-    return resultSet.getInt(1) > 0
-}
-
-fun Connection.hentAttestasjoner(
-    oppdragId: Int,
-    oppdragslinje: Int
-): List<Attest> {
-    val resultSet = prepareStatement(
-        """
-                SELECT OPPDRAGS_ID, 
-                LINJE_ID,
-                ATTESTANT_ID, 
-                LOPENR, 
-                DATO_UGYLDIG_FOM,
-                BRUKERID,
-                TIDSPKT_REG
-                FROM T_ATTESTASJON a1
-                WHERE OPPDRAGS_ID = ?
-                AND LINJE_ID = ?
-                AND DATO_UGYLDIG_FOM > current_date 
-                AND LOPENR = 
-                  ( SELECT MAX(LOPENR) 
-                  FROM T_ATTESTASJON a2 
-                  WHERE a2.OPPDRAGS_ID = a1.OPPDRAGS_ID 
-                  AND a2.LINJE_ID = a1.LINJE_ID 
-                  AND a2.ATTESTANT_ID = a1.ATTESTANT_ID ) 
-                ORDER BY TIDSPKT_REG
-            """.trimIndent()
-    ).withParameters(
-        param(oppdragId),
-        param(oppdragslinje)
-    ).executeQuery()
-    return toAttest(resultSet)
-}
-
-fun Connection.eksistererAttestasjoner(
-    oppdragId: Int,
-    oppdragslinje: Int
-): Boolean {
-    val resultSet = prepareStatement(
-        """
-                SELECT COUNT(*) 
-                FROM T_ATTESTASJON a1
-                WHERE OPPDRAGS_ID = ?
-                AND LINJE_ID = ?
-                AND DATO_UGYLDIG_FOM > current_date 
-                AND LOPENR = 
-                  ( SELECT MAX(LOPENR) 
-                  FROM T_ATTESTASJON a2 
-                  WHERE a2.OPPDRAGS_ID = a1.OPPDRAGS_ID 
-                  AND a2.LINJE_ID = a1.LINJE_ID 
-                  AND a2.ATTESTANT_ID = a1.ATTESTANT_ID ) 
-            """.trimIndent()
-    ).withParameters(
-        param(oppdragId),
-        param(oppdragslinje)
-    ).executeQuery()
-    resultSet.next()
-    return resultSet.getInt(1) > 0
-}
-
-/*fun Connection.hentOppdrag(
+fun Connection.hentOppdrag(
     oppdragId: Int
-): List<Oppdrag> {
-    val resultSet = prepareStatement(
+): List<OppdragsDetaljer> =
+    prepareStatement(
         """
-                SELECT OPPDRAGS_ID, FAGSYSTEM_ID, KODE_FAGOMRAADE, FREKVENS, KJOR_IDAG, STONAD_ID, DATO_FORFALL, OPPDRAG_GJELDER_ID, TYPE_BILAG, BRUKERID, TIDSPKT_REG 
-                FROM T_OPPDRAG
-                WHERE OPPDRAGS_ID = ?
+                SELECT  OP.OPPDRAGS_ID,
+                        OP.FAGSYSTEM_ID,
+                        OP.KJOR_IDAG,
+                        FO.NAVN_FAGOMRAADE,
+                        OP.OPPDRAG_GJELDER_ID,
+                        OS.KODE_STATUS,
+                        OS.TIDSPKT_REG
+                FROM    OS231Q1.T_OPPDRAG OP,
+                        OS231Q1.T_FAGOMRAADE FO, 
+                        OS231Q1.T_OPPDRAG_STATUS OS
+                WHERE OP.OPPDRAGS_ID = (?)
+                AND FO.KODE_FAGOMRAADE = OP.KODE_FAGOMRAADE
+                AND OS.OPPDRAGS_ID = OP.OPPDRAGS_ID
+                AND OS.TIDSPKT_REG = (
+                SELECT MAX(OS2.TIDSPKT_REG)
+                FROM OS231Q1.T_OPPDRAG_STATUS OS2
+                WHERE OS2.OPPDRAGS_ID = OS.OPPDRAGS_ID);
             """.trimIndent()
     ).withParameters(
         param(oppdragId)
-    ).executeQuery()
-    return toOppdrag(resultSet)
-}*/
+    ).run {
+        executeQuery().toOppdragsDetaljer()
+    }
 
-fun Connection.hentOppdragslinjer(
+
+fun Connection.hentOppdragsLinjer(
     oppdragId: Int
-): List<Oppdragslinje> {
-    val resultSet = prepareStatement(
+): List<OppdragsLinje> =
+    prepareStatement(
         """
-                SELECT * 
-                FROM T_OPPDRAGSLINJE
-                WHERE OPPDRAGS_ID = ?
-                ORDER BY LINJE_ID
-            """.trimIndent()
+         SELECT B.OPPDRAGS_ID, B.LINJE_ID, B.ATTESTANT_ID, B.LOPENR, B.DATO_UGYLDIG_FOM, B.BRUKERID, B.TIDSPKT_REG, A.LINJE_ID_KORR, C.KODE_STATUS, C.DATO_FOM, C.TIDSPKT_REG, C.BRUKERID, D.SATS, D.TYPE_SATS, D.KODE_KLASSE, D.DATO_VEDTAK_FOM, D.DATO_VEDTAK_TOM, D.ATTESTERT  
+         FROM 
+         (SELECT * 
+             FROM OS231Q1.T_KORREKSJON 
+             WHERE OPPDRAGS_ID = (?) ) A
+         FULL JOIN ( SELECT * 
+                     FROM OS231Q1.T_ATTESTASJON a1
+                     WHERE OPPDRAGS_ID = (?)
+                     AND DATO_UGYLDIG_FOM > current_date 
+                     AND LOPENR = 
+                         ( SELECT MAX(LOPENR) 
+                         FROM OS231Q1.T_ATTESTASJON a2 
+                         WHERE a2.OPPDRAGS_ID = a1.OPPDRAGS_ID 
+                         AND a2.LINJE_ID = a1.LINJE_ID 
+                         AND a2.ATTESTANT_ID = a1.ATTESTANT_ID ) 
+                     ) B
+         ON A.OPPDRAGS_ID = B.OPPDRAGS_ID 
+         AND A.LINJE_ID = B.LINJE_ID
+         FULL JOIN (SELECT * 
+                    FROM OS231Q1.T_LINJE_STATUS LIST
+                    WHERE LIST.OPPDRAGS_ID = (?)
+                    AND LIST.TIDSPKT_REG = (
+                    SELECT MAX(LIS2.TIDSPKT_REG)
+                        FROM  OS231Q1.T_LINJE_STATUS LIS2
+                        WHERE LIS2.OPPDRAGS_ID = LIST.OPPDRAGS_ID
+                        AND LIS2.LINJE_ID = LIST.LINJE_ID
+                        AND LIS2.DATO_FOM <= (
+                        SELECT MIN(KJPL.DATO_BEREGN_FOM)
+                            FROM OS231Q1.T_KJOREPLAN KJPL, OS231Q1.T_OPPDRAG OPPD, OS231Q1.T_FAGOMRAADE FAGO 
+                            WHERE KJPL.KODE_FAGGRUPPE 	= FAGO.KODE_FAGGRUPPE
+                            AND FAGO.KODE_FAGOMRAADE	     = OPPD.KODE_FAGOMRAADE
+                            AND KJPL.STATUS			= 'PLAN'
+                            AND KJPL.FREKVENS			= OPPD.FREKVENS
+                            AND OPPD.OPPDRAGS_ID		= LIST.OPPDRAGS_ID )
+                        ) 
+                    ) C
+         ON B.OPPDRAGS_ID = C.OPPDRAGS_ID 
+         AND B.LINJE_ID = C.LINJE_ID
+         FULL JOIN (SELECT * 
+            FROM OS231Q1.T_OPPDRAGSLINJE
+            WHERE OPPDRAGS_ID = (?) ) D 
+        ON C.OPPDRAGS_ID = D.OPPDRAGS_ID 
+        AND C.LINJE_ID = D.LINJE_ID
+        """.trimIndent()
     ).withParameters(
-        param(oppdragId)
-    ).executeQuery()
-    return toOppdragslinje(resultSet)
-}
+        param(oppdragId), param(oppdragId), param(oppdragId), param(oppdragId)
+    ).run {
+        executeQuery().toOppdragsLinjer()
+    }
 
-/*fun Connection.hentFagomraade(
-    fagomraadenavn: String
-): List<Fagomraade> {
-    val resultSet = prepareStatement(
-        """
-            SELECT F.KODE_FAGOMRAADE, F.NAVN_FAGOMRAADE, G.KODE_FAGGRUPPE, G.NAVN_FAGGRUPPE  
-            FROM T_FAGOMRAADE F, T_FAGGRUPPE G 
-            WHERE F.KODE_FAGOMRAADE = ?
-            AND F.KODE_FAGGRUPPE = G.KODE_FAGGRUPPE
-            """.trimIndent()
-    ).withParameters(
-        param(fagomraadenavn),
-    ).executeQuery()
-    return toFagomraade(resultSet)
-}*/
 
-fun Connection.hentOppdragstatus(
+fun Connection.hentOppdragsenheter (
     oppdragsId: Int
-): List<OppdragStatus> {
-    val resultSet = prepareStatement(
-        """
-            SELECT * 
-            FROM T_OPPDRAG_STATUS 
-            WHERE OPPDRAGS_ID = ?
-            """.trimIndent()
-    ).withParameters(
-        param(oppdragsId)
-    ).executeQuery()
-    return toOppdragstatus(resultSet)
-}
-
-fun Connection.eksistererOppdragstatus(
-    oppdragsId: Int
-): Boolean {
-    val resultSet = prepareStatement(
-        """
-            SELECT COUNT(*)  
-            FROM T_OPPDRAG_STATUS 
-            WHERE OPPDRAGS_ID = ?
-            """.trimIndent()
-    ).withParameters(
-        param(oppdragsId)
-    ).executeQuery()
-    resultSet.next()
-    return resultSet.getInt(1) > 0
-}
-
-/*fun Connection.hentOppdragsenhet(
-    oppdragsId: Int
-): List<Oppdragsenhet> {
-    val resultSet = prepareStatement(
+): List<OppdragsEnhet> =
+    prepareStatement (
         """
             SELECT * 
             FROM T_OPPDRAGSENHET 
-            WHERE OPPDRAGS_ID = ?
+            WHERE OPPDRAGS_ID = (?)
             """.trimIndent()
     ).withParameters(
         param(oppdragsId)
-    ).executeQuery()
-    return toOppdragsenhet(resultSet)
-}*/
+    ).run {
+        executeQuery().toOppdragsenhet()
+    }
 
-fun Connection.eksistererOppdragsenhet(
-    oppdragsId: Int
-): Boolean {
-    val resultSet = prepareStatement(
-        """
-            SELECT COUNT(*)  
-            FROM T_OPPDRAGSENHET 
-            WHERE OPPDRAGS_ID = ?
-            """.trimIndent()
-    ).withParameters(
-        param(oppdragsId)
-    ).executeQuery()
-    resultSet.next()
-    return resultSet.getInt(1) > 0
+private fun ResultSet.toOppdragsenhet() = toList {
+    OppdragsEnhet(
+        type = getColumn("TYPE_ENHET"),
+        enhet = getColumn("ENHET"),
+        datoFom = getColumn("DATO_FOM")
+    )
 }
 
 private fun ResultSet.toOppdrag() = toList {
     OppdragsInfo(
-        gjelderId = getColumn("OPPDRAG_GJELDER_ID"),
+        gjelderId = getColumn("OPPDRAG_GJELDER_ID")
+    )
+}
+
+private fun ResultSet.toOppdragsDetaljer() = toList {
+    OppdragsDetaljer(
+        fagsystemId = getColumn("FAGSYSTEM_ID"),
+        oppdragsId = getColumn("OPPDRAGS_ID"),
+        kjøresIdag = getColumn("KJOR_IDAG"),
+        fagOmraadeNavn = getColumn("NAVN_FAGOMRAADE"),
+        status = getColumn("KODE_STATUS"),
+        oppdragsEnheter = emptyList(),
+        oppdragsLinjer = emptyList()
     )
 }
 
@@ -541,8 +383,22 @@ private fun ResultSet.toOppdragList() = toList {
     )
 }
 
-fun toOppdragslinje(rs: ResultSet) = rs.toList {
-    Oppdragslinje(
+private fun ResultSet.toOppdragsLinjer() = toList {
+    OppdragsLinje(
+        linjeId = getColumn("LINJE_ID"),
+        sats = getColumn("SATS"),
+        typeSats = getColumn("TYPE_SATS"),
+        vedtakFom = getColumn("DATO_VEDTAK_FOM"),
+        vedtakTom = getColumn("DATO_VEDTAK_TOM"),
+        kodeKlasse = getColumn("KODE_KLASSE"),
+        linjeIdKorreksjon = getColumn("LINJE_ID_KORR"),
+        attestert = getColumn("ATTESTERT"),
+        status = getColumn("KODE_STATUS")
+    )
+}
+
+/*fun toOppdragslinje(rs: ResultSet) = rs.toList {
+    OppdragsLinje(
         oppdragsId = getColumn("OPPDRAGS_ID"),
         linjeId = getColumn("LINJE_ID"),
         delytelseId = getColumn("DELYTELSE_ID"),
@@ -558,7 +414,7 @@ fun toOppdragslinje(rs: ResultSet) = rs.toList {
         brukerid = getColumn("BRUKERID"),
         tidspktReg = getColumn("TIDSPKT_REG")
     )
-}
+}*/
 
 fun toOppdragstatus(rs: ResultSet) = rs.toList {
     OppdragStatus(

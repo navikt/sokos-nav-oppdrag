@@ -35,6 +35,8 @@ dependencies {
     // Modules
     implementation(project(":oppdragsinfo"))
     implementation(project(":venteregister"))
+
+    implementation(files(("db2jcc_license_cisuz.jar")))
 }
 
 tasks {

@@ -4,6 +4,7 @@ import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import no.nav.sokos.oppdragsinfo.api.model.OppdragsInfoSokRequest
@@ -19,20 +20,22 @@ fun Route.oppdragsInfoApi(
 
         post("oppdrag") {
             val oppdragsInfoSokRequest: OppdragsInfoSokRequest = call.receive()
-            val response = OppdragsInfoSokResponse(oppdragsInfoService.sokOppdrag(
-                oppdragsInfoSokRequest.gjelderId,
-                call
-            ))
+            val response = OppdragsInfoSokResponse(
+                oppdragsInfoService.sokOppdrag(
+                    oppdragsInfoSokRequest.gjelderId,
+                    call
+                )
+            )
             call.respond(response)
         }
 
-        /*        get("oppdrag/{oppdragsId}") {
-                    val response = oppdragsInfoService.hentOppdrag(
-                        call.parameters["oppdragsId"].orEmpty(),
-                        call
-                    )
-                    call.respond(response)
-                }*/
+        get("oppdrag/{oppdragsId}") {
+            val response = oppdragsInfoService.hentOppdrag(
+                call.parameters["oppdragsId"].orEmpty(),
+                call
+            )
+            call.respond(response)
+        }
 
         /*        get("oppdrag/{oppdragsId}/kompakt") {
                     val response = oppdragsInfoService.hentOppdragKompakt(
