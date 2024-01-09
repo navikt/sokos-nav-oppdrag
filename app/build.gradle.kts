@@ -4,6 +4,7 @@ val logbackVersion = "1.4.14"
 val logstashVersion = "7.4"
 val papertrailappVersion = "1.0.0"
 val konsistVersion = "0.13.0"
+val swaggerRequestValidatorVersion = "2.39.0"
 val mockOAuth2ServerVersion = "2.1.0"
 
 dependencies {
@@ -31,12 +32,13 @@ dependencies {
     testImplementation("com.lemonappdev:konsist:$konsistVersion")
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
     testImplementation("no.nav.security:mock-oauth2-server:$mockOAuth2ServerVersion")
-    
+    testImplementation("com.atlassian.oai:swagger-request-validator-restassured:$swaggerRequestValidatorVersion")
+
+    implementation(files(("/Users/mudasar/Documents/PO-Utbetaling/db2jcc_license_cisuz.jar")))
+
     // Modules
     implementation(project(":oppdragsinfo"))
     implementation(project(":venteregister"))
-
-    implementation(files(("db2jcc_license_cisuz.jar")))
 }
 
 tasks {

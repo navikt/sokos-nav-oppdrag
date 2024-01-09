@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class OppdragsInfo(
     val gjelderId: String,
     val gjelderNavn: String? = null,
-    val oppdrag : List<Oppdrag>? = null
+    val oppdragsListe : List<Oppdrag>? = null
 )

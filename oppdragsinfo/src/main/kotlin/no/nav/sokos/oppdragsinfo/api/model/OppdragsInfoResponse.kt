@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 import no.nav.sokos.oppdragsinfo.domain.OppdragsInfo
 
 @Serializable
-data class OppdragsInfoSokResponse(
-    val oppdragsInfo : List<OppdragsInfo>
+data class OppdragsInfoResponse(
+    val data : List<OppdragsInfo>
 )
