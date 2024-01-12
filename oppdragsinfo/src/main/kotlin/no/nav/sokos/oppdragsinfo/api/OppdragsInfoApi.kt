@@ -25,10 +25,10 @@ fun Route.oppdragsInfoApi(
             )
         }
 
-        post("sokOppdrag") {
+        post("oppdrag") {
             val oppdragsInfoRequest: OppdragsInfoRequest = call.receive()
             call.respond(
-                oppdragsInfoService.sokOppdrag(
+                oppdragsInfoService.hentOppdrag(
                     oppdragsInfoRequest.gjelderId,
                     oppdragsInfoRequest.faggruppeKode,
                     call

@@ -67,7 +67,7 @@ class OppdragsInfoService(
     private val tpService: TpService = TpService()
 ) {
 
-    suspend fun sokOppdrag(
+    suspend fun hentOppdrag(
         gjelderId: String,
         faggruppeKode: String?,
         applicationCall: ApplicationCall
