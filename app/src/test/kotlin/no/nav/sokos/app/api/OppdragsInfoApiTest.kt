@@ -82,13 +82,13 @@ internal class OppdragsInfoApiTest : FunSpec({
             kodeStatus = "PASS",
         )
 
-        val sokOppdragResponse = OppdragsInfo(
+        val oppdragsInfo = OppdragsInfo(
             gjelderId = "12345678901",
             gjelderNavn = "Test Testesen",
             oppdragsListe = listOf(oppdrag)
         )
 
-        coEvery { oppdragsInfoService.sokOppdrag(any(), any(), any()) } returns listOf(sokOppdragResponse)
+        coEvery { oppdragsInfoService.sokOppdrag(any(), any(), any()) } returns listOf(oppdragsInfo)
 
         val response = RestAssured.given()
             .filter(validationFilter)
@@ -125,7 +125,7 @@ internal class OppdragsInfoApiTest : FunSpec({
 
     test("hent oppdrag med gyldig gjelderId skal returnere 200 OK") {
 
-        val oppdragResponse = OppdragDetaljer(
+        val oppdragDetaljer = OppdragDetaljer(
             enhet = OppdragsEnhet(
                 type = "BOS",
                 datoFom = "2024-01-01",
@@ -154,7 +154,7 @@ internal class OppdragsInfoApiTest : FunSpec({
             )
         )
 
-        coEvery { oppdragsInfoService.hentOppdrag(any(), any()) } returns oppdragResponse
+        coEvery { oppdragsInfoService.hentOppdrag(any(), any()) } returns oppdragDetaljer
 
         val response = RestAssured.given()
             .filter(validationFilter)
@@ -219,8 +219,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].kodeFaggruppe").shouldBe("fag1")
-        response.body.jsonPath().get<String>("[0].tidspktReg").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<Ompostering>("kodeFaggruppe").first().shouldBe("fag1")
+        response.body.jsonPath().getList<Ompostering>("tidspktReg").first().shouldBe("2024-01-01")
     }
 
     test("hent oppdragsOmposteringer med ugyldig gjelderId skal returnere 400 Bad Request") {
@@ -260,8 +260,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].type").shouldBe("BOS")
-        response.body.jsonPath().get<String>("[0].datoFom").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<OppdragsEnhet>("type").first().shouldBe("BOS")
+        response.body.jsonPath().getList<OppdragsEnhet>("datoFom").first().shouldBe("2024-01-01")
     }
 
     test("hent statushistorikk skal returnere 200 OK") {
@@ -286,8 +286,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].kodeStatus").shouldBe("AKTIV")
-        response.body.jsonPath().get<String>("[0].tidspktReg").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<OppdragStatus>("kodeStatus").first().shouldBe("AKTIV")
+        response.body.jsonPath().getList<OppdragStatus>("tidspktReg").first().shouldBe("2024-01-01")
     }
 
     test("hent alle faggrupper skal returnere 200 OK") {
@@ -311,8 +311,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].navn").shouldBe("ABC")
-        response.body.jsonPath().get<String>("[0].type").shouldBe("DEF")
+        response.body.jsonPath().getList<FagGruppe>("navn").first().shouldBe("ABC")
+        response.body.jsonPath().getList<FagGruppe>("type").first().shouldBe("DEF")
     }
 
     test("hent oppdragslinjestatus skal returnere 200 OK") {
@@ -338,8 +338,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].status").shouldBe("AKTIV")
-        response.body.jsonPath().get<String>("[0].datoFom").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<LinjeStatus>("status").first().shouldBe("AKTIV")
+        response.body.jsonPath().getList<LinjeStatus>("datoFom").first().shouldBe("2024-01-01")
     }
 
     test("hent oppdragslinjeattestant skal returnere 200 OK") {
@@ -363,8 +363,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].attestantId").shouldBe("A1")
-        response.body.jsonPath().get<String>("[0].ugyldigFom").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<Attestant>("attestantId").first().shouldBe("A1")
+        response.body.jsonPath().getList<Attestant>("ugyldigFom").first().shouldBe("2024-01-01")
     }
 
     test("hent oppdragslinjedetaljer skal returnere 200 OK") {
@@ -395,7 +395,7 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<Boolean>("[0].harValutaer").shouldBe(TRUE)
+        response.body.jsonPath().getList<Boolean>("harValutaer").first().shouldBe(TRUE)
         response.body.jsonPath().getList<Int>("korrigerteLinjeIder").shouldHaveSize(1)
     }
 
@@ -426,8 +426,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].linjeId").shouldBe(1)
-        response.body.jsonPath().get<String>("[0].tidspktReg").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<Valuta>("linjeId").first().shouldBe(1)
+        response.body.jsonPath().getList<Valuta>("tidspktReg").first().shouldBe("2024-01-01")
     }
 
     test("hent oppdragslinjeskyldner skal returnere 200 OK") {
@@ -454,8 +454,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].linjeId").shouldBe(1)
-        response.body.jsonPath().get<String>("[0].tidspktReg").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<Skyldner>("linjeId").first().shouldBe(1)
+        response.body.jsonPath().getList<Skyldner>("tidspktReg").first().shouldBe("2024-01-01")
     }
 
     test("hent oppdragslinjekravhaver skal returnere 200 OK") {
@@ -482,8 +482,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].linjeId").shouldBe(1)
-        response.body.jsonPath().get<String>("[0].tidspktReg").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<Kravhaver>("linjeId").first().shouldBe(1)
+        response.body.jsonPath().getList<Kravhaver>("tidspktReg").first().shouldBe("2024-01-01")
     }
 
     test("hent oppdragslinjeenhet skal returnere 200 OK") {
@@ -512,8 +512,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].linjeId").shouldBe(1)
-        response.body.jsonPath().get<String>("[0].tidspktReg").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<LinjeEnhet>("linjeId").first().shouldBe(1)
+        response.body.jsonPath().getList<LinjeEnhet>("tidspktReg").first().shouldBe("2024-01-01")
     }
 
     test("hent oppdragslinjegrad skal returnere 200 OK") {
@@ -540,8 +540,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].linjeId").shouldBe(1)
-        response.body.jsonPath().get<String>("[0].tidspktReg").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<Grad>("linjeId").first().shouldBe(1)
+        response.body.jsonPath().getList<Grad>("tidspktReg").first().shouldBe("2024-01-01")
     }
 
     test("hent oppdragslinjetekst skal returnere 200 OK") {
@@ -565,8 +565,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].linjeId").shouldBe(1)
-        response.body.jsonPath().get<String>("[0].tekst").shouldBe("asd")
+        response.body.jsonPath().getList<Tekst>("linjeId").first().shouldBe(1)
+        response.body.jsonPath().getList<Tekst>("tekst").first().shouldBe("asd")
     }
 
     test("hent oppdragslinjekidliste skal returnere 200 OK") {
@@ -593,8 +593,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].linjeId").shouldBe(1)
-        response.body.jsonPath().get<String>("[0].tidspktReg").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<Kid>("linjeId").first().shouldBe(1)
+        response.body.jsonPath().getList<Kid>("tidspktReg").first().shouldBe("2024-01-01")
     }
 
     test("hent oppdragslinjemaksdato skal returnere 200 OK") {
@@ -621,8 +621,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].linjeId").shouldBe(1)
-        response.body.jsonPath().get<String>("[0].tidspktReg").shouldBe("2024-01-01")
+        response.body.jsonPath().getList<Maksdato>("linjeId").first().shouldBe(1)
+        response.body.jsonPath().getList<Maksdato>("tidspktReg").first().shouldBe("2024-01-01")
     }
 
     test("hent oppdragslinjeovrige skal returnere 200 OK") {
@@ -648,8 +648,8 @@ internal class OppdragsInfoApiTest : FunSpec({
             .extract()
             .response()
 
-        response.body.jsonPath().get<String>("[0].linjeId").shouldBe(1)
-        response.body.jsonPath().get<String>("[0].henvisning").shouldBe("c321")
+        response.body.jsonPath().getList<Ovrig>("linjeId").first().shouldBe(1)
+        response.body.jsonPath().getList<Ovrig>("henvisning").first().shouldBe("c321")
     }
 })
 
