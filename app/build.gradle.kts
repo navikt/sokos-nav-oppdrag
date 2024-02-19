@@ -1,11 +1,11 @@
 val ktorVersion = "2.3.8"
 val janionVersion = "3.1.12"
-val logbackVersion = "1.4.14"
+val logbackVersion = "1.5.0"
 val logstashVersion = "7.4"
 val papertrailappVersion = "1.0.0"
 val konsistVersion = "0.13.0"
 val swaggerRequestValidatorVersion = "2.40.0"
-val mockOAuth2ServerVersion = "2.1.1"
+val mockOAuth2ServerVersion = "2.1.2"
 
 dependencies {
 
