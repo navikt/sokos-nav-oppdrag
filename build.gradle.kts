@@ -2,12 +2,12 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("jvm") version "1.9.23"
+    kotlin("plugin.serialization") version "1.9.23"
 }
 
 // Ktor
-val ktorVersion = "2.3.8"
+val ktorVersion = "2.3.9"
 
 // Monitorering
 val prometheusVersion = "1.12.3"
@@ -26,7 +26,7 @@ val hikariVersion = "5.1.0"
 val db2JccVersion = "11.5.9.0"
 
 // Test
-val kotestVersion = "5.8.0"
+val kotestVersion = "5.8.1"
 val mockkVersion = "1.13.10"
 
 allprojects {
