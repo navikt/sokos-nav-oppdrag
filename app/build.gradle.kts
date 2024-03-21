@@ -3,7 +3,7 @@ val janionVersion = "3.1.12"
 val logbackVersion = "1.5.3"
 val logstashVersion = "7.4"
 val papertrailappVersion = "1.0.0"
-val konsistVersion = "0.13.0"
+val konsistVersion = "0.14.0"
 val swaggerRequestValidatorVersion = "2.40.0"
 val mockOAuth2ServerVersion = "2.1.2"
 
